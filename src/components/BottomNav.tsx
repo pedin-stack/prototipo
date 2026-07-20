@@ -12,12 +12,19 @@ const ITENS = [
 interface BottomNavProps {
   tab: Tab;
   onChange: (tab: Tab) => void;
+  perfil: 'passageiro' | 'admin' | null;
 }
 
-export default function BottomNav({ tab, onChange }: BottomNavProps) {
+export default function BottomNav({ tab, onChange, perfil }: BottomNavProps) {
+  const itensVisiveis = ITENS.filter((item) => {
+    if (item.id === 'admin' && perfil !== 'admin') return false;
+    if (item.id === 'ouvidoria' && perfil === 'admin') return false;
+    return true;
+  });
+
   return (
     <nav className="flex justify-around border-t border-gray-200 bg-white pt-2 pb-3">
-      {ITENS.map(({ id, rotulo, Icone }) => (
+      {itensVisiveis.map(({ id, rotulo, Icone }) => (
         <button
           key={id}
           type="button"
