@@ -7,6 +7,7 @@ export interface Linha {
   horarios: string[];
   ponto: string;
   lotacao: Lotacao;
+  favorita?: boolean;
 }
 
 export interface Alerta {
