@@ -12,6 +12,9 @@ interface Dados {
   setPerfil: (p: Perfil) => void;
   salvarLinha: (linha: Omit<Linha, 'id'> & { id?: number }) => void;
   informarLotacao: (id: number) => void;
+  linhaSelecionadaParaVagas: number | null;
+  setLinhaSelecionadaParaVagas: (id: number | null) => void;
+  confirmarVagas: (id: number, ocupadas: number) => void;
   alternarFavorito: (id: number) => void;
   adicionarAlerta: (alerta: Omit<Alerta, 'id'>) => void;
   removerAlerta: (id: number) => void;
@@ -55,6 +58,7 @@ export function DadosProvider({ children }: { children: ReactNode }) {
   );
   const [toastMensagem, setToastMensagem] = useState<string | null>(null);
   const [perfil, setPerfil] = useState<Perfil>(null);
+  const [linhaSelecionadaParaVagas, setLinhaSelecionadaParaVagas] = useState<number | null>(null);
 
   const mostrarToast = (msg: string) => {
     setToastMensagem(msg);
@@ -74,18 +78,20 @@ export function DadosProvider({ children }: { children: ReactNode }) {
           : [...atual, { ...linha, id: proximoId(atual) }],
       ),
     informarLotacao: (id) => {
-      const entrada = window.prompt('Quantas vagas estão preenchidas agora?');
-      if (entrada !== null && !isNaN(Number(entrada))) {
-        const ocupadas = parseInt(entrada, 10);
-        if (ocupadas >= 0) {
-          setLinhas((atual) =>
-            atual.map((l) => (l.id === id ? { ...l, vagasOcupadas: ocupadas } : l))
-          );
-          mostrarToast('Vagas atualizadas com sucesso!');
-        } else {
-          mostrarToast('Valor inválido.');
-        }
+      setLinhaSelecionadaParaVagas(id);
+    },
+    linhaSelecionadaParaVagas,
+    setLinhaSelecionadaParaVagas,
+    confirmarVagas: (id, ocupadas) => {
+      if (ocupadas >= 0) {
+        setLinhas((atual) =>
+          atual.map((l) => (l.id === id ? { ...l, vagasOcupadas: ocupadas } : l))
+        );
+        mostrarToast('Vagas atualizadas com sucesso!');
+      } else {
+        mostrarToast('Valor inválido.');
       }
+      setLinhaSelecionadaParaVagas(null);
     },
     alternarFavorito: (id) => {
       setLinhas((atual) =>
