@@ -1,4 +1,4 @@
-export const LOTACOES = ['Livre', 'Enchendo', 'Cheio'] as const;
+export const LOTACOES = ['Livre', 'Lotando', 'Lotado'] as const;
 export type Lotacao = (typeof LOTACOES)[number];
 
 export interface Linha {

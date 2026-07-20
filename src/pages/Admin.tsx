@@ -11,6 +11,7 @@ import {
   type LinhaSchema,
 } from '../schemas/admin.schema';
 import type { Linha } from '../types';
+import { IconEye, IconEyeOff } from '../components/Icons';
 
 const ESTILO_BOTAO =
   'w-full rounded-lg bg-blue-600 py-2 text-sm font-medium text-white active:bg-blue-700';
@@ -181,10 +182,74 @@ function SecaoManifestacoes() {
 
 export default function Admin() {
   const { restaurarExemplo } = useDados();
+  const [autenticado, setAutenticado] = useState(false);
+  const [usuario, setUsuario] = useState('');
+  const [senha, setSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [erro, setErro] = useState(false);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (usuario === 'adminsmartvia' && senha === 'admin123') {
+      setAutenticado(true);
+      setErro(false);
+    } else {
+      setErro(true);
+    }
+  };
+
+  if (!autenticado) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center pt-8">
+        <p className="mb-4 text-[15px] font-medium text-gray-800">Acesso Restrito</p>
+        <form onSubmit={handleLogin} className="w-full rounded-lg bg-gray-50 p-4 border border-gray-200">
+          <label className={ESTILO_ROTULO}>
+            Nome de Usuário
+            <input
+              type="text"
+              value={usuario}
+              onChange={(e) => setUsuario(e.target.value)}
+              placeholder="Digite o usuário..."
+              className={`mt-1 mb-3 ${ESTILO_CAMPO}`}
+            />
+          </label>
+          <label className={ESTILO_ROTULO}>
+            Senha de Administrador
+            <div className="relative mt-1 mb-1">
+              <input
+                type={mostrarSenha ? 'text' : 'password'}
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                placeholder="Digite a senha..."
+                className={`${ESTILO_CAMPO} pr-10`}
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarSenha(!mostrarSenha)}
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 active:text-gray-600"
+                tabIndex={-1}
+              >
+                {mostrarSenha ? <IconEyeOff size={18} /> : <IconEye size={18} />}
+              </button>
+            </div>
+          </label>
+          {erro && <p className="mb-3 text-xs text-red-600">Usuário ou senha incorretos.</p>}
+          <button type="submit" className={ESTILO_BOTAO}>
+            Entrar
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <>
-      <p className="mb-3 text-[13px] font-medium text-gray-600">Painel do administrador</p>
+      <div className="mb-3 flex items-center justify-between">
+        <p className="text-[13px] font-medium text-gray-600">Painel do administrador</p>
+        <button type="button" onClick={() => { setAutenticado(false); setUsuario(''); setSenha(''); }} className="text-xs text-blue-600">
+          Sair
+        </button>
+      </div>
       <SecaoLinhas />
       <SecaoAvisos />
       <SecaoManifestacoes />
