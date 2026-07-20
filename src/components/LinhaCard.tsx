@@ -14,7 +14,8 @@ interface LinhaCardProps {
 }
 
 export default function LinhaCard({ linha, onEditar }: LinhaCardProps) {
-  const { informarLotacao, alternarFavorito } = useDados();
+  const { informarLotacao, alternarFavorito, perfil } = useDados();
+  const podeAlterarLotacao = perfil === 'admin';
 
   return (
     <div className="mb-2 flex items-center justify-between gap-2 rounded-lg border border-gray-200 pr-3 pl-2 py-2.5 shadow-sm active:scale-[0.99] transition-transform">
@@ -39,9 +40,9 @@ export default function LinhaCard({ linha, onEditar }: LinhaCardProps) {
       <div className="flex shrink-0 flex-col items-end gap-1">
         <button
           type="button"
-          onClick={() => informarLotacao(linha.id)}
-          title="Toque para informar a lotação"
-          className={`rounded-lg px-2 py-1 min-w-[70px] min-h-[30px] flex items-center justify-center text-xs font-medium whitespace-nowrap shadow-sm active:scale-95 transition-all ${ESTILO_LOTACAO[linha.lotacao]}`}
+          onClick={() => podeAlterarLotacao && informarLotacao(linha.id)}
+          title={podeAlterarLotacao ? "Toque para informar a lotação" : "Lotação atual"}
+          className={`rounded-lg px-2 py-1 min-w-[70px] min-h-[30px] flex items-center justify-center text-xs font-medium whitespace-nowrap shadow-sm ${podeAlterarLotacao ? 'active:scale-95 transition-all cursor-pointer' : 'cursor-default'} ${ESTILO_LOTACAO[linha.lotacao]}`}
         >
           {linha.lotacao}
         </button>

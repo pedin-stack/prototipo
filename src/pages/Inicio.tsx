@@ -64,7 +64,7 @@ export default function Inicio() {
       )}
 
       <p className="mt-2 text-[11px] text-gray-400">
-        Lotação informada colaborativamente pelos passageiros.
+        Lotação gerenciada pelos administradores do sistema.
       </p>
       <p className="mt-1 text-[11px] text-gray-400">
         Horários de chegada podem variar conforme trânsito e clima.

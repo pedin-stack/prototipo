@@ -2,10 +2,14 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { ALERTAS, LINHAS } from '../data/mock';
 import { LOTACOES, type Alerta, type Linha, type Manifestacao } from '../types';
 
+export type Perfil = 'passageiro' | 'admin' | null;
+
 interface Dados {
   linhas: Linha[];
   alertas: Alerta[];
   manifestacoes: Manifestacao[];
+  perfil: Perfil;
+  setPerfil: (p: Perfil) => void;
   salvarLinha: (linha: Omit<Linha, 'id'> & { id?: number }) => void;
   informarLotacao: (id: number) => void;
   alternarFavorito: (id: number) => void;
@@ -50,6 +54,7 @@ export function DadosProvider({ children }: { children: ReactNode }) {
     [],
   );
   const [toastMensagem, setToastMensagem] = useState<string | null>(null);
+  const [perfil, setPerfil] = useState<Perfil>(null);
 
   const mostrarToast = (msg: string) => {
     setToastMensagem(msg);
@@ -60,6 +65,8 @@ export function DadosProvider({ children }: { children: ReactNode }) {
     linhas,
     alertas,
     manifestacoes,
+    perfil,
+    setPerfil,
     salvarLinha: (linha) =>
       setLinhas((atual) =>
         linha.id
