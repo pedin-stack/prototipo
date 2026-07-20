@@ -18,6 +18,7 @@ interface BottomNavProps {
 export default function BottomNav({ tab, onChange, perfil }: BottomNavProps) {
   const itensVisiveis = ITENS.filter((item) => {
     if (item.id === 'admin' && perfil !== 'admin') return false;
+    if (item.id === 'ouvidoria' && perfil === 'admin') return false;
     return true;
   });
 

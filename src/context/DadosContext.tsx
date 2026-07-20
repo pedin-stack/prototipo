@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { ALERTAS, LINHAS } from '../data/mock';
-import { LOTACOES, type Alerta, type Linha, type Manifestacao } from '../types';
+import type { Alerta, Linha, Manifestacao } from '../types';
 
 export type Perfil = 'passageiro' | 'admin' | null;
 
@@ -47,10 +47,10 @@ function useEstadoPersistido<T>(chave: string, inicial: T) {
 }
 
 export function DadosProvider({ children }: { children: ReactNode }) {
-  const [linhas, setLinhas] = useEstadoPersistido('smartvia.linhas.v3', LINHAS);
-  const [alertas, setAlertas] = useEstadoPersistido('smartvia.alertas.v3', ALERTAS);
+  const [linhas, setLinhas] = useEstadoPersistido('smartvia.linhas.v5', LINHAS);
+  const [alertas, setAlertas] = useEstadoPersistido('smartvia.alertas.v5', ALERTAS);
   const [manifestacoes, setManifestacoes] = useEstadoPersistido<Manifestacao[]>(
-    'smartvia.manifestacoes.v3',
+    'smartvia.manifestacoes.v5',
     [],
   );
   const [toastMensagem, setToastMensagem] = useState<string | null>(null);
@@ -74,14 +74,18 @@ export function DadosProvider({ children }: { children: ReactNode }) {
           : [...atual, { ...linha, id: proximoId(atual) }],
       ),
     informarLotacao: (id) => {
-      setLinhas((atual) =>
-        atual.map((l) =>
-          l.id === id
-            ? { ...l, lotacao: LOTACOES[(LOTACOES.indexOf(l.lotacao) + 1) % LOTACOES.length] }
-            : l,
-        ),
-      );
-      mostrarToast('Lotação atualizada! Obrigado pela contribuição.');
+      const entrada = window.prompt('Quantas vagas estão preenchidas agora?');
+      if (entrada !== null && !isNaN(Number(entrada))) {
+        const ocupadas = parseInt(entrada, 10);
+        if (ocupadas >= 0) {
+          setLinhas((atual) =>
+            atual.map((l) => (l.id === id ? { ...l, vagasOcupadas: ocupadas } : l))
+          );
+          mostrarToast('Vagas atualizadas com sucesso!');
+        } else {
+          mostrarToast('Valor inválido.');
+        }
+      }
     },
     alternarFavorito: (id) => {
       setLinhas((atual) =>

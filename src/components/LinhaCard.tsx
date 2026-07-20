@@ -1,12 +1,13 @@
 import { useDados } from '../context/DadosContext';
-import type { Linha, Lotacao } from '../types';
+import type { Linha } from '../types';
 import { IconStar, IconStarFilled } from './Icons';
 
-const ESTILO_LOTACAO: Record<Lotacao, string> = {
-  Livre: 'bg-green-100 text-green-700',
-  Lotando: 'bg-amber-100 text-amber-700',
-  Lotado: 'bg-red-100 text-red-700',
-};
+function getEstiloLotacao(ocupadas: number, totais: number) {
+  const porcentagem = totais > 0 ? ocupadas / totais : 0;
+  if (porcentagem < 0.5) return 'bg-green-100 text-green-700';
+  if (porcentagem < 0.9) return 'bg-amber-100 text-amber-700';
+  return 'bg-red-100 text-red-700';
+}
 
 interface LinhaCardProps {
   linha: Linha;
@@ -41,10 +42,10 @@ export default function LinhaCard({ linha, onEditar }: LinhaCardProps) {
         <button
           type="button"
           onClick={() => podeAlterarLotacao && informarLotacao(linha.id)}
-          title={podeAlterarLotacao ? "Toque para informar a lotação" : "Lotação atual"}
-          className={`rounded-lg px-2 py-1 min-w-[70px] min-h-[30px] flex items-center justify-center text-xs font-medium whitespace-nowrap shadow-sm ${podeAlterarLotacao ? 'active:scale-95 transition-all cursor-pointer' : 'cursor-default'} ${ESTILO_LOTACAO[linha.lotacao]}`}
+          title={podeAlterarLotacao ? "Toque para informar a lotação" : "Vagas ocupadas"}
+          className={`rounded-lg px-2 py-1 min-w-[70px] min-h-[30px] flex items-center justify-center text-[11px] font-bold whitespace-nowrap shadow-sm ${podeAlterarLotacao ? 'active:scale-95 transition-all cursor-pointer' : 'cursor-default'} ${getEstiloLotacao(linha.vagasOcupadas, linha.vagasTotais)}`}
         >
-          {linha.lotacao}
+          {linha.vagasOcupadas}/{linha.vagasTotais} vagas
         </button>
         {onEditar && (
           <button type="button" onClick={onEditar} className="text-xs text-blue-600">

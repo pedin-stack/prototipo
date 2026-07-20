@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import BottomNav, { type Tab } from './components/BottomNav';
 import { IconBell, IconBus } from './components/Icons';
-import { DadosProvider, useDados } from './context/DadosContext';
+import { useDados } from './context/DadosContext';
 import Inicio from './pages/Inicio';
 import Horarios from './pages/Horarios';
 import Ouvidoria from './pages/Ouvidoria';

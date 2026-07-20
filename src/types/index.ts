@@ -1,12 +1,10 @@
-export const LOTACOES = ['Livre', 'Lotando', 'Lotado'] as const;
-export type Lotacao = (typeof LOTACOES)[number];
-
 export interface Linha {
   id: number;
   nome: string;
   horarios: string[];
   ponto: string;
-  lotacao: Lotacao;
+  vagasOcupadas: number;
+  vagasTotais: number;
   favorita?: boolean;
 }
 

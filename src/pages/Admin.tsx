@@ -11,7 +11,7 @@ import {
   type LinhaSchema,
 } from '../schemas/admin.schema';
 import type { Linha } from '../types';
-import { IconEye, IconEyeOff } from '../components/Icons';
+
 
 const ESTILO_BOTAO =
   'w-full rounded-lg bg-blue-600 py-2 text-sm font-medium text-white active:bg-blue-700';
@@ -30,12 +30,12 @@ function SecaoLinhas() {
 
   const iniciarEdicao = (linha: Linha) => {
     setEditando(linha);
-    reset({ nome: linha.nome, horarios: linha.horarios.join(', '), ponto: linha.ponto });
+    reset({ nome: linha.nome, horarios: linha.horarios.join(', '), ponto: linha.ponto, vagasTotais: linha.vagasTotais });
   };
 
   const cancelar = () => {
     setEditando(null);
-    reset({ nome: '', horarios: '', ponto: '' });
+    reset({ nome: '', horarios: '', ponto: '', vagasTotais: 16 });
   };
 
   const onSubmit = (dados: LinhaSchema) => {
@@ -44,7 +44,8 @@ function SecaoLinhas() {
       nome: dados.nome,
       ponto: dados.ponto,
       horarios: dados.horarios.split(/[,·]/).map((h) => h.trim()).filter(Boolean),
-      lotacao: editando?.lotacao ?? 'Livre',
+      vagasOcupadas: editando?.vagasOcupadas ?? 0,
+      vagasTotais: dados.vagasTotais,
     });
     cancelar();
   };
@@ -74,6 +75,11 @@ function SecaoLinhas() {
           Ponto de embarque
           <input type="text" {...register('ponto')} aria-invalid={!!errors.ponto} className={`mt-1 ${ESTILO_CAMPO}`} />
           <Erro mensagem={errors.ponto?.message} />
+        </label>
+        <label className={ESTILO_ROTULO}>
+          Capacidade do veículo (vagas)
+          <input type="number" {...register('vagasTotais')} aria-invalid={!!errors.vagasTotais} className={`mt-1 ${ESTILO_CAMPO}`} />
+          <Erro mensagem={errors.vagasTotais?.message} />
         </label>
         <button type="submit" className={ESTILO_BOTAO}>
           {editando ? 'Salvar alterações' : 'Adicionar linha'}
