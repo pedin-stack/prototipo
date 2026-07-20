@@ -15,8 +15,9 @@ interface LinhaCardProps {
 }
 
 export default function LinhaCard({ linha, onEditar }: LinhaCardProps) {
-  const { informarLotacao, alternarFavorito, perfil } = useDados();
-  const podeAlterarLotacao = perfil === 'admin';
+  const { informarLotacao, alternarFavorito } = useDados();
+  // Indicador colaborativo: todos podem informar a lotação
+  const podeAlterarLotacao = true;
 
   return (
     <div className="mb-2 flex items-center justify-between gap-2 rounded-lg border border-gray-200 pr-3 pl-2 py-2.5 shadow-sm active:scale-[0.99] transition-transform">
