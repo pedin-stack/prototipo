@@ -2,34 +2,50 @@ import { useState } from 'react';
 import { useDados } from '../context/DadosContext';
 import { IconBus, IconEye, IconEyeOff } from '../components/Icons';
 
+const CREDENCIAIS = {
+  admin: { usuario: 'adminsmartvia', senha: 'admin123' },
+  passageiro: { usuario: 'passageiro', senha: 'passageiro123' },
+} as const;
+
 export default function LoginInicial() {
   const { setPerfil } = useDados();
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [modo, setModo] = useState<'admin' | 'passageiro' | null>(null);
   const [usuario, setUsuario] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
 
-  const handleAdminLogin = (e: React.FormEvent) => {
+  const abrir = (m: 'admin' | 'passageiro') => {
+    setModo(m);
+    setUsuario('');
+    setSenha('');
+    setErro('');
+  };
+
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (usuario === 'adminsmartvia' && senha === 'admin123') {
-      setPerfil('admin');
+    if (modo && usuario === CREDENCIAIS[modo].usuario && senha === CREDENCIAIS[modo].senha) {
+      setPerfil(modo);
     } else {
       setErro('Usuário ou senha incorretos.');
     }
   };
 
-  if (showAdminLogin) {
+  if (modo) {
     return (
       <div className="flex h-full flex-col p-6 animate-in fade-in slide-in-from-right-4 duration-300">
-        <button onClick={() => setShowAdminLogin(false)} className="self-start text-xs font-medium text-blue-600 mb-6">
+        <button onClick={() => setModo(null)} className="self-start text-xs font-medium text-blue-600 mb-6">
           &larr; Voltar
         </button>
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-gray-900">Login Administrativo</h2>
-          <p className="text-sm text-gray-500">Insira suas credenciais para gerenciar o sistema.</p>
+          <h2 className="text-xl font-bold text-gray-900">
+            {modo === 'admin' ? 'Login Administrativo' : 'Login do Passageiro'}
+          </h2>
+          <p className="text-sm text-gray-500">
+            {modo === 'admin' ? 'Insira suas credenciais para gerenciar o sistema.' : 'Entre para reservar sua vaga.'}
+          </p>
         </div>
-        <form onSubmit={handleAdminLogin} className="flex flex-col gap-4">
+        <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <label className="block text-xs font-medium text-gray-600">
             Usuário
             <input
@@ -62,7 +78,7 @@ export default function LoginInicial() {
             type="submit"
             className="mt-2 w-full rounded-lg bg-gray-900 py-3 text-sm font-medium text-white shadow-sm active:scale-95 transition-all"
           >
-            Entrar no Painel
+            Entrar
           </button>
         </form>
       </div>
@@ -82,7 +98,7 @@ export default function LoginInicial() {
       <div className="flex w-full flex-col gap-3">
         <button
           type="button"
-          onClick={() => setPerfil('passageiro')}
+          onClick={() => abrir('passageiro')}
           className="w-full rounded-xl bg-blue-600 py-3.5 font-medium text-white shadow-sm active:scale-95 transition-all"
         >
           Sou Passageiro
@@ -90,7 +106,7 @@ export default function LoginInicial() {
 
         <button
           type="button"
-          onClick={() => setShowAdminLogin(true)}
+          onClick={() => abrir('admin')}
           className="w-full rounded-xl border border-gray-200 bg-white py-3.5 font-medium text-gray-700 active:bg-gray-50 active:scale-95 transition-all"
         >
           Acesso Administrador

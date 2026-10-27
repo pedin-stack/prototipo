@@ -21,3 +21,10 @@ export interface Manifestacao {
   tipo: string;
   mensagem: string;
 }
+
+export interface Reserva {
+  id: number;
+  linhaId: number;
+  horario: string;
+  usuario: string;
+}

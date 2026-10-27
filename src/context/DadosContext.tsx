@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { ALERTAS, LINHAS } from '../data/mock';
-import type { Alerta, Linha, Manifestacao } from '../types';
+import type { Alerta, Linha, Manifestacao, Reserva } from '../types';
 
 export type Perfil = 'passageiro' | 'admin' | null;
 
@@ -12,6 +12,9 @@ interface Dados {
   setPerfil: (p: Perfil) => void;
   salvarLinha: (linha: Omit<Linha, 'id'> & { id?: number }) => void;
   informarLotacao: (id: number) => void;
+  reservas: Reserva[];
+  reservarVaga: (id: number, horario: string) => void;
+  cancelarReserva: (id: number) => void;
   alternarFavorito: (id: number) => void;
   adicionarAlerta: (alerta: Omit<Alerta, 'id'>) => void;
   removerAlerta: (id: number) => void;
@@ -53,6 +56,7 @@ export function DadosProvider({ children }: { children: ReactNode }) {
     'smartvia.manifestacoes.v5',
     [],
   );
+  const [reservas, setReservas] = useEstadoPersistido<Reserva[]>('smartvia.reservas.v2', []);
   const [toastMensagem, setToastMensagem] = useState<string | null>(null);
   const [perfil, setPerfil] = useState<Perfil>(null);
 
@@ -87,6 +91,27 @@ export function DadosProvider({ children }: { children: ReactNode }) {
         }
       }
     },
+    reservas,
+    reservarVaga: (id, horario) => {
+      const linha = linhas.find((l) => l.id === id);
+      if (!linha) return;
+      if (reservas.some((r) => r.linhaId === id && r.horario === horario))
+        return mostrarToast('Você já reservou este horário.');
+      if (linha.vagasOcupadas >= linha.vagasTotais) return mostrarToast('Linha lotada.');
+      setLinhas((atual) => atual.map((l) => (l.id === id ? { ...l, vagasOcupadas: l.vagasOcupadas + 1 } : l)));
+      // ponytail: conta única de passageiro, então o usuário é fixo; guardar o login quando houver várias contas
+      setReservas((atual) => [...atual, { id: proximoId(atual), linhaId: id, horario, usuario: 'passageiro' }]);
+      mostrarToast('Vaga reservada com sucesso!');
+    },
+    cancelarReserva: (reservaId) => {
+      const r = reservas.find((x) => x.id === reservaId);
+      if (!r) return;
+      setReservas((atual) => atual.filter((x) => x.id !== reservaId));
+      setLinhas((atual) =>
+        atual.map((l) => (l.id === r.linhaId ? { ...l, vagasOcupadas: Math.max(0, l.vagasOcupadas - 1) } : l)),
+      );
+      mostrarToast('Reserva cancelada.');
+    },
     alternarFavorito: (id) => {
       setLinhas((atual) =>
         atual.map((l) => (l.id === id ? { ...l, favorita: !l.favorita } : l))
@@ -105,6 +130,7 @@ export function DadosProvider({ children }: { children: ReactNode }) {
       setLinhas(LINHAS);
       setAlertas(ALERTAS);
       setManifestacoes([]);
+      setReservas([]);
       mostrarToast('Dados restaurados.');
     },
     toastMensagem,

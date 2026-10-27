@@ -17,7 +17,7 @@ export default function Horarios() {
       )}
 
       <p className="mt-2 text-[11px] text-gray-400">
-        Toque no indicador de lotação para informar como está o ônibus.
+        Passageiros podem reservar vaga; o administrador atualiza a lotação.
       </p>
     </>
   );
