@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { ALERTAS, LINHAS } from '../data/mock';
-import type { Alerta, Linha, Manifestacao } from '../types';
+import type { Alerta, Linha, Manifestacao, Reserva } from '../types';
 
 export type Perfil = 'passageiro' | 'admin' | null;
 
@@ -12,8 +12,9 @@ interface Dados {
   setPerfil: (p: Perfil) => void;
   salvarLinha: (linha: Omit<Linha, 'id'> & { id?: number }) => void;
   informarLotacao: (id: number) => void;
-  reservas: number[];
-  reservarVaga: (id: number) => void;
+  reservas: Reserva[];
+  reservarVaga: (id: number, horario: string) => void;
+  cancelarReserva: (id: number) => void;
   alternarFavorito: (id: number) => void;
   adicionarAlerta: (alerta: Omit<Alerta, 'id'>) => void;
   removerAlerta: (id: number) => void;
@@ -55,8 +56,7 @@ export function DadosProvider({ children }: { children: ReactNode }) {
     'smartvia.manifestacoes.v5',
     [],
   );
-  // ponytail: reserva por linha, sem horário nem usuário; virar registro {linhaId, horario, usuario} se precisar cancelar/histórico
-  const [reservas, setReservas] = useEstadoPersistido<number[]>('smartvia.reservas.v1', []);
+  const [reservas, setReservas] = useEstadoPersistido<Reserva[]>('smartvia.reservas.v2', []);
   const [toastMensagem, setToastMensagem] = useState<string | null>(null);
   const [perfil, setPerfil] = useState<Perfil>(null);
 
@@ -92,14 +92,25 @@ export function DadosProvider({ children }: { children: ReactNode }) {
       }
     },
     reservas,
-    reservarVaga: (id) => {
+    reservarVaga: (id, horario) => {
       const linha = linhas.find((l) => l.id === id);
       if (!linha) return;
-      if (reservas.includes(id)) return mostrarToast('Você já reservou uma vaga nesta linha.');
+      if (reservas.some((r) => r.linhaId === id && r.horario === horario))
+        return mostrarToast('Você já reservou este horário.');
       if (linha.vagasOcupadas >= linha.vagasTotais) return mostrarToast('Linha lotada.');
       setLinhas((atual) => atual.map((l) => (l.id === id ? { ...l, vagasOcupadas: l.vagasOcupadas + 1 } : l)));
-      setReservas((atual) => [...atual, id]);
+      // ponytail: conta única de passageiro, então o usuário é fixo; guardar o login quando houver várias contas
+      setReservas((atual) => [...atual, { id: proximoId(atual), linhaId: id, horario, usuario: 'passageiro' }]);
       mostrarToast('Vaga reservada com sucesso!');
+    },
+    cancelarReserva: (reservaId) => {
+      const r = reservas.find((x) => x.id === reservaId);
+      if (!r) return;
+      setReservas((atual) => atual.filter((x) => x.id !== reservaId));
+      setLinhas((atual) =>
+        atual.map((l) => (l.id === r.linhaId ? { ...l, vagasOcupadas: Math.max(0, l.vagasOcupadas - 1) } : l)),
+      );
+      mostrarToast('Reserva cancelada.');
     },
     alternarFavorito: (id) => {
       setLinhas((atual) =>

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useDados } from '../context/DadosContext';
 import type { Linha } from '../types';
 import { IconStar, IconStarFilled } from './Icons';
@@ -15,9 +16,10 @@ interface LinhaCardProps {
 }
 
 export default function LinhaCard({ linha, onEditar }: LinhaCardProps) {
-  const { informarLotacao, alternarFavorito, perfil, reservas, reservarVaga } = useDados();
+  const { informarLotacao, alternarFavorito, perfil, reservas, reservarVaga, cancelarReserva } = useDados();
   const podeAlterarLotacao = perfil === 'admin';
-  const reservada = reservas.includes(linha.id);
+  const [horario, setHorario] = useState(linha.horarios[0] ?? '');
+  const reserva = reservas.find((r) => r.linhaId === linha.id && r.horario === horario);
   const lotada = linha.vagasOcupadas >= linha.vagasTotais;
 
   return (
@@ -50,14 +52,35 @@ export default function LinhaCard({ linha, onEditar }: LinhaCardProps) {
           {linha.vagasOcupadas}/{linha.vagasTotais} vagas
         </button>
         {perfil === 'passageiro' && (
-          <button
-            type="button"
-            disabled={reservada || lotada}
-            onClick={() => reservarVaga(linha.id)}
-            className="rounded-lg bg-blue-600 px-2 py-1 text-[11px] font-medium text-white active:scale-95 transition-all disabled:bg-gray-200 disabled:text-gray-500"
-          >
-            {reservada ? 'Reservada' : lotada ? 'Lotado' : 'Reservar vaga'}
-          </button>
+          <>
+            <select
+              value={horario}
+              onChange={(e) => setHorario(e.target.value)}
+              className="rounded-lg border border-gray-200 bg-white px-1 py-1 text-[11px] text-gray-700"
+            >
+              {linha.horarios.map((h) => (
+                <option key={h} value={h}>{h}</option>
+              ))}
+            </select>
+            {reserva ? (
+              <button
+                type="button"
+                onClick={() => cancelarReserva(reserva.id)}
+                className="rounded-lg border border-red-200 bg-white px-2 py-1 text-[11px] font-medium text-red-600 active:scale-95 transition-all"
+              >
+                Cancelar reserva
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={lotada}
+                onClick={() => reservarVaga(linha.id, horario)}
+                className="rounded-lg bg-blue-600 px-2 py-1 text-[11px] font-medium text-white active:scale-95 transition-all disabled:bg-gray-200 disabled:text-gray-500"
+              >
+                {lotada ? 'Lotado' : 'Reservar vaga'}
+              </button>
+            )}
+          </>
         )}
         {onEditar && (
           <button type="button" onClick={onEditar} className="text-xs text-blue-600">
