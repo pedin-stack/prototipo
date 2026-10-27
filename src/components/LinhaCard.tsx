@@ -15,8 +15,10 @@ interface LinhaCardProps {
 }
 
 export default function LinhaCard({ linha, onEditar }: LinhaCardProps) {
-  const { informarLotacao, alternarFavorito, perfil } = useDados();
+  const { informarLotacao, alternarFavorito, perfil, reservas, reservarVaga } = useDados();
   const podeAlterarLotacao = perfil === 'admin';
+  const reservada = reservas.includes(linha.id);
+  const lotada = linha.vagasOcupadas >= linha.vagasTotais;
 
   return (
     <div className="mb-2 flex items-center justify-between gap-2 rounded-lg border border-gray-200 pr-3 pl-2 py-2.5 shadow-sm active:scale-[0.99] transition-transform">
@@ -47,6 +49,16 @@ export default function LinhaCard({ linha, onEditar }: LinhaCardProps) {
         >
           {linha.vagasOcupadas}/{linha.vagasTotais} vagas
         </button>
+        {perfil === 'passageiro' && (
+          <button
+            type="button"
+            disabled={reservada || lotada}
+            onClick={() => reservarVaga(linha.id)}
+            className="rounded-lg bg-blue-600 px-2 py-1 text-[11px] font-medium text-white active:scale-95 transition-all disabled:bg-gray-200 disabled:text-gray-500"
+          >
+            {reservada ? 'Reservada' : lotada ? 'Lotado' : 'Reservar vaga'}
+          </button>
+        )}
         {onEditar && (
           <button type="button" onClick={onEditar} className="text-xs text-blue-600">
             Editar

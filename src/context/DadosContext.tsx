@@ -12,6 +12,8 @@ interface Dados {
   setPerfil: (p: Perfil) => void;
   salvarLinha: (linha: Omit<Linha, 'id'> & { id?: number }) => void;
   informarLotacao: (id: number) => void;
+  reservas: number[];
+  reservarVaga: (id: number) => void;
   alternarFavorito: (id: number) => void;
   adicionarAlerta: (alerta: Omit<Alerta, 'id'>) => void;
   removerAlerta: (id: number) => void;
@@ -53,6 +55,8 @@ export function DadosProvider({ children }: { children: ReactNode }) {
     'smartvia.manifestacoes.v5',
     [],
   );
+  // ponytail: reserva por linha, sem horário nem usuário; virar registro {linhaId, horario, usuario} se precisar cancelar/histórico
+  const [reservas, setReservas] = useEstadoPersistido<number[]>('smartvia.reservas.v1', []);
   const [toastMensagem, setToastMensagem] = useState<string | null>(null);
   const [perfil, setPerfil] = useState<Perfil>(null);
 
@@ -87,6 +91,16 @@ export function DadosProvider({ children }: { children: ReactNode }) {
         }
       }
     },
+    reservas,
+    reservarVaga: (id) => {
+      const linha = linhas.find((l) => l.id === id);
+      if (!linha) return;
+      if (reservas.includes(id)) return mostrarToast('Você já reservou uma vaga nesta linha.');
+      if (linha.vagasOcupadas >= linha.vagasTotais) return mostrarToast('Linha lotada.');
+      setLinhas((atual) => atual.map((l) => (l.id === id ? { ...l, vagasOcupadas: l.vagasOcupadas + 1 } : l)));
+      setReservas((atual) => [...atual, id]);
+      mostrarToast('Vaga reservada com sucesso!');
+    },
     alternarFavorito: (id) => {
       setLinhas((atual) =>
         atual.map((l) => (l.id === id ? { ...l, favorita: !l.favorita } : l))
@@ -105,6 +119,7 @@ export function DadosProvider({ children }: { children: ReactNode }) {
       setLinhas(LINHAS);
       setAlertas(ALERTAS);
       setManifestacoes([]);
+      setReservas([]);
       mostrarToast('Dados restaurados.');
     },
     toastMensagem,
